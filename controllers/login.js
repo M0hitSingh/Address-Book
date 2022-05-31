@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const user = require('../models/user');
+const { async } = require('regenerator-runtime');
 
 exports.login = async (req ,res ,next) =>{
     try{
@@ -29,6 +30,29 @@ exports.login = async (req ,res ,next) =>{
             }
             res.status(401).json('incorrect pass');
         })
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+exports.renewToken = (req,res,next)=>{
+    try{
+        const refreshToken = req.body.token;
+        if(!refreshToken){
+            return res.status(403).json({message:"User not authenticated"})
+        }
+        jwt.verify(refreshToken,process.env.RE,(err,user)=>{
+            if(!err){
+                //console.log(user);
+                const accessToken = jwt.sign({email:user.email,userId:user.userId},process.env.AC,{expiresIn:"360s"});
+                return res.status(201).json({accessToken:accessToken});
+            }
+            else{
+                err.status = 403;
+                throw err;
+            }
+        });
     }
     catch(err){
         next(err);
