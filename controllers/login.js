@@ -14,7 +14,7 @@ exports.login = async (req ,res ,next) =>{
           error.statusCode = 422;
           throw error;
         }
-        const result = await user.findOne({email:email});
+        const result = await user.findOne({email:email , verified:true});
         if(!result) return res.status(404).json('Not found');        // if user not found in DB
 
         bcrypt.compare ( pass, result.password).then(item=>{

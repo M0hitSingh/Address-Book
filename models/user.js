@@ -4,7 +4,7 @@ const schema = mongoose.Schema;
 const userSchema = new schema({
     fullname : {
         type : String,
-        required : true
+        required:true
     },
     email: {
         type: String,
@@ -12,11 +12,9 @@ const userSchema = new schema({
     },
     password: {
         type: String,
-        require: true,
     },
     Phno: {
         type : String,
-        required: true
     },
     phoneBook: {
         type:schema.Types.ObjectId,

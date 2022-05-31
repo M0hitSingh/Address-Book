@@ -1,14 +1,15 @@
 const otpGenrator = require('otp-generator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const validationResult = require('express-validator');
+const { validationResult, body } = require('express-validator');
 const sendgrid = require('nodemailer-sendgrid-transport');
 const nodemailer = require('nodemailer');
 
+const mail = require("../utils/sendgrid");
 const user = require('../models/user');
 const otp = require('../models/otp');
 const contacts = require('../models/contacts');
-const { async } = require('regenerator-runtime');
+
 
 const transport = nodemailer.createTransport(sendgrid({
     auth: {
@@ -18,11 +19,11 @@ const transport = nodemailer.createTransport(sendgrid({
 
 exports.signup = async (req ,res ,next)=>{
     try{
-        const name = req.body.name;
+        const fullname = req.body.fullname;
         const email = req.body.email;
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-            const error = new Error('validation failed');
+            const error = new Error('validation failed, Not a proper Email');
             error.status = 422;
             throw error;
         }
@@ -32,14 +33,18 @@ exports.signup = async (req ,res ,next)=>{
             error.status = 409;
             throw error;
         }
-        const userdetails = new user({
-            email:email
-        })
-        userdetails.save();
-        const OTPgen = otpGenrator.generate(6 ,{
-            digits:true , alphabets : false , uppercase:false,
+        const result = await user.findOne({email:email});
+        if(!result){
+            const details = new user({
+                fullname:fullname,
+                email:email
+            })
+            details.save();
+        }
+        const OTPgen = otpGenrator.generate(5,{
+            digits:true, lowerCaseAlphabets : false, upperCaseAlphabets:false,
             specialChars:false
-        });
+        })
         otp_result = await otp.findOne({email:email});
         if(otp_result == null){
             const Otp = new otp({
@@ -48,13 +53,8 @@ exports.signup = async (req ,res ,next)=>{
             });
             Otp.save();
         }
-        else otp_result.findOneAndUpdate({email:email},{otp:OTPgen});
-        transport.sendMail({
-            to:email,
-            from:'Vouch_Digital@gmail.com',  
-            subject:'your OTP for Address Book',
-            html:`<h3> your otp is :  ${OTPgen} </h3>`
-        })
+        else otp.findOneAndUpdate({email:email},{otp:OTPgen});
+        mail.sendEmail(email, OTPgen);
         res.status(201).json("otp send");
     }
     catch(err){
@@ -71,7 +71,7 @@ exports.otp_request= async (req, res, next )=>{
         if(enteredOtp == userOtp.otp){
             userdata.verified = true;
             userdata.save();
-            return res.status(202).json('otp verified');
+            res.status(202).json('otp verified');
         } 
         else{
             const error = new Error('verification failed');
@@ -84,32 +84,33 @@ exports.otp_request= async (req, res, next )=>{
     }
 }
 exports.password_req = async (req,res,next)=>{
-    const name = req.body.name;
-    const pass = req.body.password;
-    const confirmpass = req.body.confirmpass;
-    const Phno = req.body.PhoneNumber;
-    const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        errors.status = 401;
-        throw errors;
+    try{
+        const email = req.body.email;
+        const pass = req.body.password;
+        const confirmpass = req.body.confirmpass;
+        const Phno = req.body.PhoneNumber;
+        const errors = validationResult(req);
+        if(!errors.isEmpty()){
+            errors.status = 401;
+            throw errors;
+        }
+        if(pass !== confirmpass){
+            const error = new Error('password must be same!');
+            error.status = 422;
+            throw error;
+        }
+        const hpass = await bcrypt.hash(pass ,10);
+        const accessToken = jwt.sign({email:email},process.env.AC,{expiresIn:"5m"});
+        const refreshToken = jwt.sign({email:email},process.env.RE, {expiresIn:"15m"});
+        const userdata = await user.findOneAndUpdate({email:email ,verified:true} , {password:hpass , Phno:Phno});
+        if(!userdata){
+            const error = new Error('No Data Found');
+            error.status = 404;
+            throw error;
+        }
+        return res.status(201).json({accessToken:accessToken,refreshToken:refreshToken});
     }
-    if(pass !== confirmpass){
-        const error = new Error('password must be same!');
-        error.status = 422;
-        throw error;
-    }
-    const hpass = await bcrypt.hash(pass ,10);
-    const accessToken = jwt.sign({email:email},process.env.AC,{expiresIn:"5m"});
-    const refreshToken = jwt.sign({email:email},process.env.RE, {expiresIn:"15m"});
-    const userdetails = {
-        fullname : name,
-        password : pass,
-        Phno : Phno
-    }
-    const userdata = user.findOneAndUpdate({email:email ,verified:true} , {userdetails});
-    if(!userdata){
-        const error = new Error('No Data Found');
-        error.status = 404;
-        throw error;
+    catch(err){
+        next(err);
     }
 }

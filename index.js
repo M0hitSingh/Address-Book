@@ -4,9 +4,13 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/auth');
 
+require('dotenv').config();
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+//routes
+app.use('/auth',authRoutes);
 
 // error handler
 app.use((error, req, res, next) => {
@@ -16,9 +20,6 @@ app.use((error, req, res, next) => {
     const data = error.data;
     res.status(status).json({ message: message, data: data });
 });
-//routes
-app.use('auth/',authRoutes);
-
 // connect to data base
 mongoose.connect(process.env.DB,()=>{
     console.log('connected');
