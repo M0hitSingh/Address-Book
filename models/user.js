@@ -21,6 +21,10 @@ const userSchema = new schema({
     phoneBook: {
         type:schema.Types.ObjectId,
         ref:"contacts"
+    },
+    verified: {
+        type : String,
+        default : false
     }
 })
 module.exports = mongoose.model("User",userSchema);
