@@ -75,7 +75,30 @@ exports.search = async(req ,res,next)=>{
         next(err);
     }
 }
-
+exports.update = async (req,res,next)=>{
+    try{
+        const userid = req.user._id;
+        const updateid = req.body.id;
+        const name = req.body.name;
+        const phone_no = req.body.phone_no;
+        const address = req.body.address;
+        const contactUpdate = {
+            name:name,
+            phone_no:phone_no,
+            address:address
+        }
+        const result = await contact.findOneAndUpdate({_id:updateid,userID:userid},contactUpdate);
+        if(!result){
+            const error = new Error('Not Found');
+            error.statusCode = 404;
+            throw error;
+        }
+        return res.status(204).json("done");
+    }
+    catch(err){
+        next(err);
+    }
+}
 exports.getContact = async(req,res,next)=>{
     try{
         const page = req.query.page;
