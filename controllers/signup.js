@@ -68,6 +68,9 @@ exports.otp_request= async (req, res, next )=>{
         const enteredOtp = req.body.otp;
         const userOtp = await otp.findOne({email:email});
         userdata = await user.findOne({email:email , verified:false});
+        if(!userdata){
+            return res.status(409).json("user not exist");
+        }
         if(enteredOtp == userOtp.otp){
             userdata.verified = true;
             userdata.save();

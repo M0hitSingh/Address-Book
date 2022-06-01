@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const user = require('../models/user');
-const { async } = require('regenerator-runtime');
+
 
 exports.login = async (req ,res ,next) =>{
     try{
@@ -20,8 +20,8 @@ exports.login = async (req ,res ,next) =>{
 
         bcrypt.compare ( pass, result.password).then(item=>{
             if(item){
-                const accessToken = jwt.sign({email:email},process.env.AC,{expiresIn:"5m"});
-                const refreshToken = jwt.sign({email:email},process.env.RE , {expiresIn:"15m"});
+                const accessToken = jwt.sign({email:email},process.env.AC,{expiresIn:"55m"});
+                const refreshToken = jwt.sign({email:email},process.env.RE , {expiresIn:"310m"});
                 return res.status(202).json({
                     email,
                     accessToken,

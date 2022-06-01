@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const user = require('../models/user');
 
 module.exports = (req, res, next) => {
   try{
@@ -8,38 +9,28 @@ module.exports = (req, res, next) => {
       }
       else{
           const token = authHeader.split(' ')[1];
-          jwt.verify(token,process.env.ACCESS_TOKEN_KEY,async(err,decode)=>{
+          jwt.verify(token,process.env.AC,async(err,decode)=>{
             try{
                 if(decode)
                 { 
                  const email=decode.email;
-                 const userData = await User.findOne({email:email});
+                 const userData = await user.findOne({email:email});
                  if(userData)
                  {
                    req.user = userData;
-                   req.type = 'user';
                  }
                  else
                  {
-                    const storeData = await Store.findOne({email:email});
-                    if(storeData)
-                    {
-                      req.user = storeData;
-                      req.type = 'store';
-                    }
-                    else
-                    {
-                      const err= new Error('please signup');
+                      const err= new Error('User not exist');
                       err.statusCode=400;
                       throw err;
-                    }
                   }
                   next();
                 }
              else if (err.message === "jwt expired")
                 return res.status(403).json({message: "Access token expired"});
              else 
-                    return res.status(402).json({message: "User not authenticated" });
+                return res.status(402).json({message: "User not authenticated" });
             }
             catch(err){
               err.statusCode=450;

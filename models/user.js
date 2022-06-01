@@ -16,10 +16,10 @@ const userSchema = new schema({
     Phno: {
         type : String,
     },
-    phoneBook: {
+    phoneBook: [{
         type:schema.Types.ObjectId,
         ref:"contacts"
-    },
+    }],
     verified: {
         type : String,
         default : false
