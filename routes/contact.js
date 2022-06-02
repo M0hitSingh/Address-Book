@@ -4,16 +4,24 @@ const contactController = require('../controllers/contact');
 const isAuth = require('../middleware/isAuth');
 const router = express.Router();
 
-
+// Add a new contact.
 router.post('/addcontact',isAuth,contactController.addContact);
+//Add bulk contacts.
+router.post("/bulkupload",isAuth,upload.single('csv'),contactController.bulkContact);
+// Fetch details of single contact
 router.get('/fetchcontact',isAuth,contactController.findContact);
-router.get('/getcontact',isAuth,contactController.getContact);
+// Fetch phase matching 
 router.get('/search',isAuth,contactController.search);
-
+//Fetch the list of contacts with pagination
+router.get('/getcontact',isAuth,contactController.getContact);
+//Update the contact.
 router.post('/update',isAuth,contactController.update)
+//Delete the given contact
 router.post('/delete/:id',isAuth,contactController.delete)
 
 
+
+// multer API for uploading CSV files
 const storage = multer.diskStorage({
     destination:(req ,file ,cb)=>{
         cb(null ,'csv')
@@ -23,11 +31,6 @@ const storage = multer.diskStorage({
     }
 });
 let upload = multer({storage:storage});
-
-router.post("/bulkupload",isAuth,upload.single('csv'),contactController.bulkContact);
-
-
-
 
 
 module.exports = router;

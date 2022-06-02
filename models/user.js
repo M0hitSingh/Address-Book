@@ -18,7 +18,7 @@ const userSchema = new schema({
     },
     phoneBook: [{
         type:schema.Types.ObjectId,
-        ref:"contacts"
+        ref:"contacts"                                    // for populating contacts in their respective user 
     }],
     verified: {
         type : String,

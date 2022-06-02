@@ -1,28 +1,27 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
-
-
-const authRoutes = require('./routes/auth');
-const contactRoutes = require('./routes/contact');
-const app = express();
-
-
 const path = require("path");
 
-app.use('/csv',express.static(__dirname+'/csv'));
+// import Routes
+const authRoutes = require('./routes/auth');
+const contactRoutes = require('./routes/contact');
+
+const app = express();
+const cors = require('cors');   
 
 
+
+app.use('/csv',express.static(__dirname+'/csv'));                   // for public view
 
 
 require('dotenv').config();
-// app.use(fileup())        
 app.use(express.json());
 app.use(cors());
 
 //routes
 app.use('/auth',authRoutes);
 app.use('/contact',contactRoutes);
+
 // error handler
 app.use((error, req, res, next) => {
     console.log(error);

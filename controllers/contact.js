@@ -1,6 +1,4 @@
-const { async } = require('regenerator-runtime');
 const contact = require('../models/contacts');
-const { findOne, findById } = require("../models/user");
 const user = require('../models/user');
 const express = require('express');
 const app = express();
@@ -12,37 +10,7 @@ const csvtojson = require("csvtojson");
 const path = require("path")
 
 
-exports.bulkContact = async (req,res,next)=>{
-    try{
-        const userid = req.user.id;
-        const name = req.file;
-        const csvArray = [];
-        uploadPath= path.join(__dirname,'../','csv',name.originalname);
-            const source = await csvtojson().fromFile(uploadPath)
-            console.log(source)
-            if(source){                                                                // fetching data from each row
-                for(var i =0 ; i <source.length; ++i){
-                    var onerow = {
-                        userID:userid,
-                        name: source[i]["name"],
-                        phone_no: source[i]["phone_no"],
-                        address: source[i]["address"]
-                    }
-                    csvArray[i]=onerow;
-                }
-                contact.insertMany(csvArray);
-                return res.status(202).json('Bulk Contact Uploaded')
-            }
-            else{
-                const err = new Error
-                throw err;
-            }
-    }
-    catch(err){
-        next(err);
-    }
-}
-exports.addContact = async (req, res,next)=>{
+exports.addContact = async (req, res,next)=>{                         // For adding Single Contact in contact model
     try{
         const userid = req.user._id;
         const name = req.body.name;
@@ -71,7 +39,37 @@ exports.addContact = async (req, res,next)=>{
     }
 }
 
-exports.findContact = async (req,res,next)=>{
+exports.bulkContact = async (req,res,next)=>{                                       // For uploading bulk contact in contact model 
+    try{
+        const userid = req.user.id;
+        const name = req.file;  
+        const csvArray = [];
+        uploadPath= path.join(__dirname,'../','csv',name.originalname);
+            const source = await csvtojson().fromFile(uploadPath)
+            console.log(source)
+            if(source){                                                                // fetching data from each row
+                for(var i =0 ; i <source.length; ++i){
+                    var onerow = {
+                        userID:userid,
+                        name: source[i]["name"],
+                        phone_no: source[i]["phone_no"],
+                        address: source[i]["address"]
+                    }
+                    csvArray[i]=onerow;
+                }
+                contact.insertMany(csvArray);
+                return res.status(202).json('Bulk Contact Uploaded')
+            }
+            else{
+                const err = new Error
+                throw err;
+            }
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.findContact = async (req,res,next)=>{                           // Finding Contact in Contact model for respective user
     try{
         const userid = req.user._id;
         userdetail =await user.findById(userid);
@@ -87,7 +85,7 @@ exports.findContact = async (req,res,next)=>{
     }
 }
 
-exports.search = async(req ,res,next)=>{
+exports.search = async(req ,res,next)=>{                    // phase searching on phone number or contact name 
     try{
         const search = req.query.search;
         contact.find({$or:[
@@ -106,7 +104,7 @@ exports.search = async(req ,res,next)=>{
         next(err);
     }
 }
-exports.update = async (req,res,next)=>{
+exports.update = async (req,res,next)=>{                    //updating single contact in contact model for respective user
     try{
         const userid = req.user._id;
         const updateid = req.body.id;
@@ -130,10 +128,10 @@ exports.update = async (req,res,next)=>{
         next(err);
     }
 }
-exports.getContact = async(req,res,next)=>{
+exports.getContact = async(req,res,next)=>{                                     // fetching contact list for respective user in page 
     try{
         const page = req.query.page;
-        const limit = req.query.limit;
+        const limit = req.query.limit;          // set limit to view contacts limited contact in single page
         const userid = req.user._id;
         const result = await contact.find().limit(limit*1).skip((page-1)*limit)
         res.status(202).json({"pageNo":page,result});
@@ -142,8 +140,8 @@ exports.getContact = async(req,res,next)=>{
         next(err);
     }
 }
-//pull
-exports.delete = async (req,res,next)=>{
+
+exports.delete = async (req,res,next)=>{                        // deleting single contact from respective user
     try{
         const userid = req.user._id;
         const deleteid = req.params.id;
@@ -153,7 +151,7 @@ exports.delete = async (req,res,next)=>{
             error.statusCode = 404;
             throw error;
         }
-        await user.updateOne({_id:userid},{$pull:{phoneBook:deleteid}});
+        await user.updateOne({_id:userid},{$pull:{phoneBook:deleteid}});           // pulling its contact object id from user phoneBook array
         return res.status(204).json("done");
     }
     catch(err){

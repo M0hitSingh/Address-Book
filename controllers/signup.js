@@ -17,7 +17,7 @@ const transport = nodemailer.createTransport(sendgrid({
     }
 }))
 
-exports.signup = async (req ,res ,next)=>{
+exports.signup = async (req ,res ,next)=>{          // new account signup
     try{
         const fullname = req.body.fullname;
         const email = req.body.email;
@@ -62,7 +62,7 @@ exports.signup = async (req ,res ,next)=>{
     }
 }
 
-exports.otp_request= async (req, res, next )=>{
+exports.otp_request= async (req, res, next )=>{             // validating user from sending otp on email
     try{
         const email = req.body.email;
         const enteredOtp = req.body.otp;
@@ -86,7 +86,7 @@ exports.otp_request= async (req, res, next )=>{
         next(err);
     }
 }
-exports.password_req = async (req,res,next)=>{
+exports.password_req = async (req,res,next)=>{              // genrating user password
     try{
         const email = req.body.email;
         const pass = req.body.password;
@@ -102,7 +102,7 @@ exports.password_req = async (req,res,next)=>{
             error.status = 422;
             throw error;
         }
-        const hpass = await bcrypt.hash(pass ,10);
+        const hpass = await bcrypt.hash(pass ,10);                  // hashing password for security 
         const accessToken = jwt.sign({email:email},process.env.AC,{expiresIn:"5m"});
         const refreshToken = jwt.sign({email:email},process.env.RE, {expiresIn:"15m"});
         const userdata = await user.findOneAndUpdate({email:email ,verified:true} , {password:hpass , Phno:Phno});
