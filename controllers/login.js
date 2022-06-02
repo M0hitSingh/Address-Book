@@ -8,6 +8,7 @@ exports.login = async (req ,res ,next) =>{              // For Login To Address 
     try{
         const email = req.body.email;
         const pass = req.body.password;
+        console.log(email)
         // validation for email
         const emailregex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/
         var validemail = emailregex.test(email);
