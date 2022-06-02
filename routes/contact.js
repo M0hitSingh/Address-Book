@@ -4,6 +4,17 @@ const contactController = require('../controllers/contact');
 const isAuth = require('../middleware/isAuth');
 const router = express.Router();
 
+// multer API for uploading CSV files
+const storage = multer.diskStorage({
+    destination:(req ,file ,cb)=>{
+        cb(null ,'csv')
+    },
+    filename: (req,file ,cb)=>{
+        cb(null ,file.originalname);
+    }
+});
+let upload = multer({storage:storage});
+
 // Add a new contact.
 router.post('/addcontact',isAuth,contactController.addContact);
 //Add bulk contacts.
@@ -21,16 +32,6 @@ router.post('/delete/:id',isAuth,contactController.delete)
 
 
 
-// multer API for uploading CSV files
-const storage = multer.diskStorage({
-    destination:(req ,file ,cb)=>{
-        cb(null ,'csv')
-    },
-    filename: (req,file ,cb)=>{
-        cb(null ,file.originalname);
-    }
-});
-let upload = multer({storage:storage});
 
 
 module.exports = router;
