@@ -8,9 +8,10 @@ const contactRoutes = require('./routes/contact');
 const app = express();
 
 
+const path = require("path");
 
+app.use('/csv',express.static(__dirname+'/csv'));
 
-app.use( "/csv",express.static(path.join(__dirname, 'csv')));
 
 
 

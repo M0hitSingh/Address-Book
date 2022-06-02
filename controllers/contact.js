@@ -2,69 +2,24 @@ const { async } = require('regenerator-runtime');
 const contact = require('../models/contacts');
 const { findOne, findById } = require("../models/user");
 const user = require('../models/user');
+const express = require('express');
+const app = express();
 
+const fileup = require("express-fileupload");
+app.use(fileup())
 
-const csvv = require("csvtojson");
+const csvtojson = require("csvtojson");
 const path = require("path")
-exports.csvtojson = async(req,res,next)=>{
-  try{
-    // console.log(req.files)
-    const userid = req.user.id;
-    const name =req.files.csv
-    var arrayToInsert = [];
-    uploadPath = path.join(__dirname,'../','csv',name.name)
-    name.mv(uploadPath,async function(err) {
-      if (err)
-        return res.status(500).send(err);
-    
-      const source = await csvv().fromFile(uploadPath)
-        if(source)
-        {
-             // Fetching the all data from each row
-            for (var i = 0; i < source.length; i++) {
-            var oneRow = {
-                userID:userid,
-                name: source[i]["name"],
-                phone_no: source[i]["phone_no"],
-                address: source[i]["address"]
-            }; 
-                // console.log(oneRow)
-                arrayToInsert[i]=oneRow;
-           }
-           
-        // console.log(arrayToInsert)
-           contact.insertMany(arrayToInsert);  
-           res.send('File uploaded!') 
-           }
-           else{
-            const err = new Error('Not an Admin');
-            err.statusCode = 422;
-            throw err;
-           }
-       
-    })
-}
-  catch(err){
-    if(!err.statusCode) 
-    err.statusCode = 500; 
-    next();
-  }
-}
 
 
 exports.bulkContact = async (req,res,next)=>{
     try{
         const userid = req.user.id;
         const name = req.file;
-        console.log(name);
         const csvArray = [];
-        uploadPath= path.join(__dirname,'../','csv',name.name);
-        name.mv(uploadPath,async function(err){
-            if(err){
-                const error = new Error();
-                throw error;
-            }
+        uploadPath= path.join(__dirname,'../','csv',name.originalname);
             const source = await csvtojson().fromFile(uploadPath)
+            console.log(source)
             if(source){                                                                // fetching data from each row
                 for(var i =0 ; i <source.length; ++i){
                     var onerow = {
@@ -82,7 +37,6 @@ exports.bulkContact = async (req,res,next)=>{
                 const err = new Error
                 throw err;
             }
-        })
     }
     catch(err){
         next(err);

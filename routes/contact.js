@@ -1,5 +1,5 @@
 const express = require('express');
-
+const multer = require('multer');
 const contactController = require('../controllers/contact');
 const isAuth = require('../middleware/isAuth');
 const router = express.Router();
@@ -14,9 +14,17 @@ router.post('/update',isAuth,contactController.update)
 router.post('/delete/:id',isAuth,contactController.delete)
 
 
+const storage = multer.diskStorage({
+    destination:(req ,file ,cb)=>{
+        cb(null ,'csv')
+    },
+    filename: (req,file ,cb)=>{
+        cb(null ,file.originalname);
+    }
+});
+let upload = multer({storage:storage});
 
-
-
+router.post("/bulkupload",isAuth,upload.single('csv'),contactController.bulkContact);
 
 
 
