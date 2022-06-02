@@ -1,16 +1,22 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const fs = require('fs');
 
 
 const authRoutes = require('./routes/auth');
 const contactRoutes = require('./routes/contact');
+const app = express();
+
+
+
+
+app.use( "/csv",express.static(path.join(__dirname, 'csv')));
+
+
 
 require('dotenv').config();
-const app = express();
+// app.use(fileup())        
 app.use(express.json());
-app.use('/public',express.static(__dirname+'/csv/public'));
 app.use(cors());
 
 //routes
