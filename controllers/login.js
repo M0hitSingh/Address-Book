@@ -19,7 +19,7 @@ exports.login = async (req ,res ,next) =>{              // For Login To Address 
         const result = await user.findOne({email:email , verified:true});
         if(!result) return res.status(404).json('Not found');        // if user not found in DB
 
-        bcrypt.compare ( pass, result.password).then(item=>{
+        bcrypt.compare ( pass, result.password).then(item=>{                // compare hashed password
             if(item){
                 const accessToken = jwt.sign({email:email},process.env.AC,{expiresIn:"5m"});
                 const refreshToken = jwt.sign({email:email},process.env.RE , {expiresIn:"15m"});

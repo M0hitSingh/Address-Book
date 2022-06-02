@@ -3,11 +3,13 @@ const user = require('../models/user');
 const express = require('express');
 const app = express();
 
+const mongoose = require('mongoose');
 const fileup = require("express-fileupload");
 app.use(fileup())
 
 const csvtojson = require("csvtojson");
-const path = require("path")
+const path = require("path");
+
 
 
 exports.addContact = async (req, res,next)=>{                         // For adding Single Contact in contact model
@@ -44,17 +46,22 @@ exports.bulkContact = async (req,res,next)=>{                                   
         const userid = req.user.id;
         const name = req.file;  
         const csvArray = [];
+        userdetail = await user.findById(userid);
+        if(!userdetail) return res.status(404).json('User Not Found');
         uploadPath= path.join(__dirname,'../','csv',name.originalname);
             const source = await csvtojson().fromFile(uploadPath)
-            console.log(source)
-            if(source){                                                                // fetching data from each row
-                for(var i =0 ; i <source.length; ++i){
+            if(source){                                                               
+                for(var i =0 ; i <source.length; ++i){   
+                    const id = new mongoose.Types.ObjectId();                                     // fetching data from each row
                     var onerow = {
+                        _id:id,
                         userID:userid,
                         name: source[i]["name"],
                         phone_no: source[i]["phone_no"],
                         address: source[i]["address"]
                     }
+                    userdetail.phoneBook.push(id);
+                    await userdetail.save();
                     csvArray[i]=onerow;
                 }
                 contact.insertMany(csvArray);
