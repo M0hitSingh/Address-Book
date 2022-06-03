@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const contactController = require('../controllers/contact');
 const isAuth = require('../middleware/isAuth');
+const {body} = require('express-validator');
 const router = express.Router();
 
 // multer API for uploading CSV files
@@ -16,7 +17,7 @@ const storage = multer.diskStorage({
 let upload = multer({storage:storage});
 
 // Add a new contact.
-router.post('/addcontact',isAuth,contactController.addContact);
+router.post('/addcontact',isAuth,body('PhoneNumber').isLength(10),contactController.addContact);
 //Add bulk contacts.
 router.post("/bulkupload",isAuth,upload.single('csv'),contactController.bulkContact);
 // Fetch details of single contact

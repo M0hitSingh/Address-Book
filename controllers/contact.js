@@ -3,6 +3,7 @@ const user = require('../models/user');
 const express = require('express');
 const app = express();
 
+const { validationResult, body } = require('express-validator');
 const mongoose = require('mongoose');
 const fileup = require("express-fileupload");
 app.use(fileup())
@@ -20,6 +21,12 @@ exports.addContact = async (req, res,next)=>{                         // For add
         const address = req.body.address;
         const userdetail = await user.findById(userid);
         const contactdetail = await contact.find({userID:userid,name:name,phone_no:phone_no});
+        const errors = validationResult(req);
+        if(!errors.isEmpty()){
+            const error = new Error('validation failed,please enter 10 digit no');
+            error.status = 422;
+            throw error;
+        }
         if(contactdetail.length){
             const error = new Error('Already Exist');
             error.statusCode = 422;
